@@ -1,0 +1,43 @@
+#install-SSMAgent-CWAgent-Linux-2
+#!/bin/bash
+cd /tmp
+sudo yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
+sudo systemctl enable amazon-ssm-agent
+sudo systemctl start amazon-ssm-agent
+yes | sudo yum install amazon-cloudwatch-agent
+
+#install-Memory-Disk-Utilization
+{
+  "metrics": {
+    "namespace": "CWAgent",
+    "append_dimensions": {
+      "InstanceId": "${aws:InstanceId}",
+      "InstanceType": "${aws:InstanceType}"
+    },
+    "metrics_collected": {
+      "disk": {
+        "measurement": [
+          "disk_total",
+          "disk_used_percent",
+          "disk_free"
+        ],
+        "metrics_collection_interval": 300,
+        "resources": [
+          "*"
+        ],
+        "ignore_file_system_types": [
+          "sysfs", "devtmpfs", "squashfs", "tmpfs", "rootfs", "overlay"
+        ],
+        "drop_device": true
+      },
+      "mem": {
+        "measurement": [
+          "mem_total",
+          "mem_used_percent",
+          "mem_available_percent"
+        ],
+        "metrics_collection_interval": 300
+      }
+    }
+  }
+}
